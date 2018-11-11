@@ -6,6 +6,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn import svm
 from sklearn.neural_network import MLPClassifier
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers.recurrent import SimpleRNN
 from gensim.models import Word2Vec, Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
 
@@ -153,15 +156,28 @@ def mlp_classifier(input_, input__, output_):
         return numpy.linalg.norm(numpy.subtract(output_,y_pred),1)
 
 
+def rnn_classifier(input_, input__, output_):
+        trainX = numpy.reshape(input_, (input_.shape[0], 2, maxfeatures/2))
+        testX = numpy.reshape(input__, (input__.shape[0], 2, maxfeatures/2))
+        model = Sequential()
+        model.add(SimpleRNN(4, input_shape=(2, maxfeatures/2)))
+        model.add(Dense(1))
+        model.compile(loss='mean_squared_error', optimizer='adam')
+        model.fit(trainX, output_, epochs=100, batch_size=32, verbose=2)    
+        y_pred = model.predict(testX)
+        return numpy.linalg.norm(numpy.subtract(output_, y_pred),1)
+
+
 ##### Execution
 
 def call(data1, data2, data3, data4, files):
 	data_ = doc_vec(data1, data2, data3, data4)
         y_out = numpy.concatenate([numpy.zeros(12500),numpy.ones(12500)])
-	for index in range(1,7):
+	for index in range(1,2):
 		words = vectors(data_, files, index)	
 		
 		print 'Classifiers:'
+                """
 		nb1 = naive_bayes(words[:25000], words[25000:], y_out)
 		print 'NB = ', "%.2f" %(100 - nb1/250.0)
 
@@ -173,7 +189,11 @@ def call(data1, data2, data3, data4, files):
 
 		nn1 = mlp_classifier(words[:25000], words[25000:], y_out)
 		print 'NN = ', "%.2f" %(100 - nn1/250.0)
-		print '___ ___'
+                """
+                rnn1 = rnn_classifier(words[:25000], words[25000:], y_out)
+                print 'RNN = ', "%.2f" %(100 - rnn1/250.0)
+                print '___ ___'
+
 
 #####
 print 'Execution:'
