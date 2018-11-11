@@ -1,0 +1,4 @@
+Studied classical sentiment classification algorithms and analyzed performance over different representations.
+Implemented representations such as Binary Bag Of Words, TF-IDF, Glove, Word2Vec and Paragraph vectors.
+Implemented Classifiers such as Naive Bayes, Logistic Regression, Support Vector Machines, Feed Forward Neural Networks, 
+Recurrent Neural Networks and analyzed their performance on IMDB dataset.
