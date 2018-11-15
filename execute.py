@@ -177,7 +177,7 @@ def call(data1, data2, data3, data4, files):
 		words = vectors(data_, files, index)	
 		
 		print 'Classifiers:'
-                """
+                
 		nb1 = naive_bayes(words[:25000], words[25000:], y_out)
 		print 'NB = ', "%.2f" %(100 - nb1/250.0)
 
@@ -189,9 +189,10 @@ def call(data1, data2, data3, data4, files):
 
 		nn1 = mlp_classifier(words[:25000], words[25000:], y_out)
 		print 'NN = ', "%.2f" %(100 - nn1/250.0)
-                """
+                
                 rnn1 = rnn_classifier(words[:25000], words[25000:], y_out)
                 print 'RNN = ', "%.2f" %(100 - rnn1/250.0)
+                
                 print '___ ___'
 
 
