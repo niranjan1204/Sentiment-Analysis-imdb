@@ -26,7 +26,7 @@ files4 = os.listdir(path4)
 
 files0 = open("./dataset/glove/glove.6B.100d.txt", 'r') 
 data1 ,data2 = [], []
-maxfeatures = 4000
+maxfeatures = 10000
 stop_words = set(stopwords.words('english'))
 
 def preprocess_(files, path):
@@ -74,15 +74,15 @@ def vectors(vector, files, index):
     dictionary = []
 
     if index == 1:
-        vectorizer = CountVectorizer(stop_words = 'english', min_df = 10, max_df = 0.5, max_features = maxfeatures, binary = True)
+        vectorizer = CountVectorizer(stop_words = 'english', min_df = 10, max_df = 0.5, max_features = maxfeatures/5, binary = True)
         print 'Binary Bag Of Words'
 
     elif index == 2:
-	vectorizer = TfidfVectorizer(stop_words = 'english', min_df = 10, max_df = 0.5, max_features = maxfeatures, use_idf = False)
+	vectorizer = TfidfVectorizer(stop_words = 'english', min_df = 10, max_df = 0.5, max_features = maxfeatures/5, use_idf = False)
         print 'Normalized Tf'
 
     elif index == 3:
-	vectorizer = TfidfVectorizer(stop_words = 'english', min_df = 10, max_df = 0.5, max_features = maxfeatures)
+	vectorizer = TfidfVectorizer(stop_words = 'english', min_df = 10, max_df = 0.5, max_features = maxfeatures/5)
 	print 'TfIdf'
 
     elif index == 4:
@@ -121,7 +121,7 @@ def vectors(vector, files, index):
             word = TaggedDocument(words = stops, tags = [count])
             vector_.append(word)
 
-        temp = Doc2Vec(vector_, max_vocab_size =  maxfeatures, dm = 0)
+        temp = Doc2Vec(vector_, max_vocab_size =  maxfeatures, vector_size = 100, window = 8, epochs = 100)
         print 'Doc2Vec (Paragraph Vector)'
         for i in range(0, 50000):
             dictionary.append(temp.docvecs[i])
@@ -156,15 +156,15 @@ def mlp_classifier(input_, input__, output_):
         return numpy.linalg.norm(numpy.subtract(output_,y_pred),1)
 
 
-def rnn_classifier(input_, input__, output_):
-        trainX = numpy.reshape(input_, (input_.shape[0], 2, maxfeatures/2))
-        testX = numpy.reshape(input__, (input__.shape[0], 2, maxfeatures/2))
+def rnn_classifier(input_, input__, output_, dim):
+        trainX = numpy.reshape(input_, (input_.shape[0], 2, dim))
+        testX = numpy.reshape(input__, (input__.shape[0], 2, dim))
         model = Sequential()
-        model.add(SimpleRNN(4, input_shape=(2, maxfeatures/2)))
+        model.add(SimpleRNN(4, input_shape=(2, dim)))
         model.add(Dense(1))
         model.compile(loss='mean_squared_error', optimizer='adam')
-        model.fit(trainX, output_, epochs=100, batch_size=32, verbose=2)    
-        y_pred = model.predict(testX)
+        model.fit(trainX, output_, epochs=100, batch_size=32, verbose=0)    
+        y_pred = model.predict(testX).reshape(25000)
         return numpy.linalg.norm(numpy.subtract(output_, y_pred),1)
 
 
@@ -173,7 +173,7 @@ def rnn_classifier(input_, input__, output_):
 def call(data1, data2, data3, data4, files):
 	data_ = doc_vec(data1, data2, data3, data4)
         y_out = numpy.concatenate([numpy.zeros(12500),numpy.ones(12500)])
-	for index in range(1,2):
+	for index in range(1,7):
 		words = vectors(data_, files, index)	
 		
 		print 'Classifiers:'
@@ -190,7 +190,7 @@ def call(data1, data2, data3, data4, files):
 		nn1 = mlp_classifier(words[:25000], words[25000:], y_out)
 		print 'NN = ', "%.2f" %(100 - nn1/250.0)
                 
-                rnn1 = rnn_classifier(words[:25000], words[25000:], y_out)
+                rnn1 = rnn_classifier(numpy.array(words[:25000]), numpy.array(words[25000:]), y_out, 1000 if index < 4 else 50)
                 print 'RNN = ', "%.2f" %(100 - rnn1/250.0)
                 
                 print '___ ___'
