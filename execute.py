@@ -116,9 +116,9 @@ def vectors(vector, files, index):
 
     elif index == 6:
         vector_ = []
-        for count,x in enumerate(vector):
-	    stops = [x for x in word_tokenize(x) if x not in stop_words]
-            word = TaggedDocument(words = stops, tags = [count])
+        for count, x in enumerate(vector):
+	    stops = [y for y in word_tokenize(x)]
+            word = TaggedDocument(words = stops, tags = [str(count)])
             vector_.append(word)
 
         temp = Doc2Vec(vector_, max_vocab_size =  maxfeatures, vector_size = 100, window = 8, epochs = 100)
@@ -173,7 +173,7 @@ def rnn_classifier(input_, input__, output_, dim):
 def call(data1, data2, data3, data4, files):
 	data_ = doc_vec(data1, data2, data3, data4)
         y_out = numpy.concatenate([numpy.zeros(12500),numpy.ones(12500)])
-	for index in range(1,7):
+	for index in range(6, 7):
 		words = vectors(data_, files, index)	
 		
 		print 'Classifiers:'
